@@ -1,0 +1,166 @@
+Note: System.getenv blocked by COMSOL security; using defaults.
+Options: PAPER_RESOLUTION=false, MESH_LEVEL=2
+Geometry built: 190 primitives (one domain each).
+Mesh 1 built (level 2): 53067 elements
+>> running std_es : Study 0: Electrostatic unit cells (C(d), dC/dd, fringe factors)
+   done in 45 s, dataset dset1
+   drive cell: C(0)=10.9224 fF/finger, dC/dy=NaN fF/um (analytic 0.23611) -> eta_d=NaN
+   sense cell: C(0)=15.4318 fF/electrode, dC/dx=NaN fF/um (analytic 3.14816) -> eta_s=NaN
+   wrote MEMS_TFG_SchemeI_Chevron_v2_electrostatic_cells.csv
+!! Study 0 failed: Exception:
+	com.comsol.nativeutil.properties.InvalidPropertyValueException: Invalid dataset type.
+Messages:
+	Invalid dataset type
+	- Tag: dset1
+  (eta_d = eta_s = 1 kept)
+>> running std1 : Study 1: Eigenfrequency - drive & sense modes (automatic identification)
+   done in 362 s, dataset dset5
+   mode table (k, f[Hz], Q, P_drive, P_drive_in, P_sense, P_sense_in):
+    1   12929.22   1165.8  2.31e+03    0.0507     0.221   0.00688  <== DRIVE (anti-phase y)
+    2   13080.87   1833.2     0.311   0.00683  1.71e+03    0.0134  <== SENSE (anti-phase x)
+    3   16814.32   1495.1    0.0510  2.33e+03  0.000911    0.0146
+    4   18214.23   1432.5  2.65e-05  0.000140  2.58e-06  1.30e-06
+    5   18302.52   1441.5  4.11e-05  8.68e-05  1.25e-06  2.38e-06
+    6   26911.92   2349.3   0.00403    0.0116   0.00658  2.42e+03
+    7   29794.61   2539.8    0.0667      32.1    0.0427    0.0633
+    8   29988.62   2524.0      9.94    0.0620   0.00800     0.329
+    9   30191.28   8222.5  1.63e-05  2.03e-05  1.61e-07  1.62e-06
+   10   31463.14   4913.1  9.41e-07  2.68e-06  4.97e-08  6.72e-06
+   11   31654.88   5397.9  5.40e-06  4.13e-06  7.52e-07  4.90e-07
+   12   32484.28  20296.8  9.45e-06  9.84e-06  3.11e-07  1.10e-06
+   13   32738.24   4468.5  1.67e-05  1.71e-05  6.71e-08  2.00e-06
+   14   38840.34   5214.6  4.94e-06  6.06e-06  2.42e-08  1.42e-07
+   15   39044.94  21148.5  1.05e-05  1.13e-05  5.68e-08  1.25e-06
+   16   45275.32   7694.2  2.35e-06  1.26e-06  2.35e-07  1.41e-06
+   17   48321.47 2959722.9    0.0277    0.0109  0.000209      14.9
+   18   48451.39 411227.2      26.4   0.00433   0.00169    0.0206
+   19   48830.91  19867.8  3.98e-06  2.05e-07  1.96e-06  1.33e-06
+   20   51562.92  13152.1  2.28e-06  3.53e-06  2.48e-07  6.25e-07
+   21   53728.94  19313.2  1.03e-06  1.62e-06  5.24e-06  2.16e-06
+   22   53814.32  11446.6  1.34e-06  5.58e-07  8.18e-07  7.77e-07
+   23   56455.22  18195.7  5.33e-06  4.48e-06  9.39e-07  4.82e-07
+   24   60059.76  30797.8    0.0158      80.5   0.00657  0.000874
+   25   62224.35  14703.5  7.92e-06  2.99e-06  5.22e-07  1.31e-06
+   26   65504.69  81603.5  5.17e-07  3.63e-06  2.89e-06  6.01e-07
+   27   66617.84  95563.9  2.59e-06  3.54e-06  1.84e-06  7.27e-07
+   28   75712.36  17907.1  5.77e-06  2.74e-06  3.21e-06  1.04e-06
+   DRIVE mode #1 f=12929.22 Hz | SENSE mode #2 f=13080.87 Hz | df = 151.65 Hz | R_fem(sense mode) = 1.5285
+   wrote MEMS_TFG_SchemeI_Chevron_v2_modes.csv
+>> running std2 : Study 2: Frequency domain - DRIVE response to the push-pull comb voltages
+   done in 868 s, dataset dset7
+   wrote MEMS_TFG_SchemeI_Chevron_v2_drive_FRF.csv
+>> running std3 : Study 3: Frequency domain - SENSE response to +/-1 uN (paper Fig. 9)
+   done in 1183 s, dataset dset9
+   FIG.9: peak sense-frame amplitude 1.2182 um at 13080.87 Hz, Q(-3dB) ~ 1817, dC_diff = 138.067 fF, R_fem = 1.5285
+   wrote MEMS_TFG_SchemeI_Chevron_v2_sense_FRF_fig9.csv
+>> running std4 : Study 4: Gyroscope operation - drive voltages + Coriolis (Omega_z sweep) -> C, V_out
+   done in 126 s, dataset dset11
+!! BUILD/SOLVE ERROR: Exception:
+	com.comsol.nativejni.FlNativeException: Failed to evaluate expression.
+Messages:
+	Undefined post expression
+
+	Undefined variable
+	- Variable: comp1.F_drive
+	- Global scope
+
+	Failed to evaluate expression
+	- Expression: comp1.F_drive
+	- Feature: Global Evaluation 5
+
+Exception:
+	com.comsol.nativejni.FlNativeException: Failed to evaluate expression.
+Messages:
+	Undefined post expression
+
+	Undefined variable
+	- Variable: comp1.F_drive
+	- Global scope
+
+	Failed to evaluate expression
+	- Expression: comp1.F_drive
+	- Feature: Global Evaluation 5
+
+Stack trace:
+at evaltree.cpp. Row: 755(Detail: :2)
+	at xevaluators.cpp. Row: 381(Detail: :1)
+	at postinterp.cpp. Row: 970(Detail: :0)
+	at com.comsol.nativejni.xmesh.PostInterp.eval(Native Method)
+	at com.comsol.nativejni.xmesh.PostInterp.eval(SourceFile:40)
+	at com.comsol.nativemph.xmesh.f.a(SourceFile:73)
+	at com.comsol.post.dataset.ak$1.a(SourceFile:692)
+	at com.comsol.post.q$1.a(SourceFile:44)
+	at com.comsol.nativeutil.runnable.h.run(SourceFile:129)
+	at com.comsol.post.q.a(SourceFile:47)
+	at com.comsol.post.dataset.ak.a(SourceFile:695)
+	at com.comsol.post.dataset.bu.a(SourceFile:244)
+	at com.comsol.post.dataset.ba.a(SourceFile:546)
+	at com.comsol.post.dataset.ay.b(SourceFile:1429)
+	at com.comsol.post.dataset.ay.b(SourceFile:1474)
+	at com.comsol.post.dataset.ay.a(SourceFile:624)
+	at com.comsol.post.dataset.ay.b(SourceFile:1474)
+	at com.comsol.post.numerical.ac.a(SourceFile:73)
+	at com.comsol.post.numerical.bi.a(SourceFile:59)
+	at com.comsol.post.numerical.ao.a(SourceFile:462)
+	at com.comsol.post.numerical.ao.a(SourceFile:129)
+	at com.comsol.post.numerical.ao.a(SourceFile:94)
+	at com.comsol.post.numerical.ao.b(SourceFile:78)
+	at com.comsol.post.u.b(SourceFile:354)
+	at com.comsol.post.u.a(SourceFile:168)
+	at com.comsol.post.numerical.ao.a(SourceFile:787)
+	at com.comsol.post.numerical.az.setResult(SourceFile:290)
+	at com.comsol.model.method.NumericalFeatureMethod.setResult(SourceFile:159)
+	at com.comsol.model.dbmodel.NumericalFeatureDb.setResult(SourceFile:371)
+	at com.comsol.model.impl.NumericalFeatureImpl$22.run(SourceFile:588)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at com.comsol.model.impl.NumericalFeatureImpl.setResult(SourceFile:585)
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(Unknown Source)
+	at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
+	at java.lang.reflect.Method.invoke(Unknown Source)
+	at com.comsol.model.debugger.MethodExecModelHelper.runApiMethod(SourceFile:84)
+	at com.comsol.methodexecmph.a.a.a(SourceFile:280)
+	at com.comsol.methodexecmph.a.a.a(SourceFile:219)
+	at com.comsol.methodexecmph.b.a(SourceFile:101)
+	at com.comsol.model.util.ServerModelUtil.runExternalClass(SourceFile:963)
+	at com.comsol.model.util.ModelUtilInternal.runExternalClass(SourceFile:202)
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(Unknown Source)
+	at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
+	at java.lang.reflect.Method.invoke(Unknown Source)
+	at com.comsol.bridge.command.b.a(SourceFile:161)
+	at com.comsol.bridge.command.c.run(SourceFile:63)
+	at com.comsol.bridge.command.k.c(SourceFile:219)
+	at com.comsol.bridge.command.k$1.run(SourceFile:94)
+	at com.comsol.util.thread.SuspendableTasks$1.run(SourceFile:111)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.lang.Thread.run(Unknown Source)
+	at ---.---(Unknown Source)
+	at com.comsol.methodexec.a.f$e.a(SourceFile:351)
+	at com.comsol.methodexec.a.f.d(SourceFile:143)
+	at com.comsol.methodexec.a.f.b(SourceFile:210)
+	at com.comsol.methodexec.a.f.a(SourceFile:187)
+	at com.comsol.methodexec.a.g.a(SourceFile:37)
+	at com.comsol.methodexec.comm.h.a(SourceFile:60)
+	at com.comsol.methodexec.meapi.engine.b.a(SourceFile:159)
+	at com.comsol.methodexec.meapi.engine.b.a(SourceFile:82)
+	at com.comsol.methodexec.meapi.impl.NumericalFeatureMEClient.setResult(SourceFile:391)
+	at TFG_SchemeI_Chevron.evalGlobal(TFG_SchemeI_Chevron.class:808)
+	at TFG_SchemeI_Chevron.solveAll(TFG_SchemeI_Chevron.class:989)
+	at TFG_SchemeI_Chevron.run(TFG_SchemeI_Chevron.class:58)
+	at TFG_SchemeI_Chevron.main(TFG_SchemeI_Chevron.class:21)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
+	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+	at com.comsol.methodexec.me.d.a(SourceFile:353)
+	at com.comsol.methodexec.util.JDIDebugHook.invokeMethod(SourceFile:30)
+	at com.comsol.methodexec.me.d.a(SourceFile:352)
+	at com.comsol.methodexec.me.d$2.run(SourceFile:283)
+	at java.base/java.security.AccessController.doPrivileged(Native Method)
+	at com.comsol.methodexec.me.d.a(SourceFile:279)
+	at com.comsol.methodexec.me.d.a(SourceFile:140)
+	at com.comsol.methodexec.me.d.a(SourceFile:94)
+	at com.comsol.methodexec.me.b$3.run(SourceFile:244)
+Saved MEMS_TFG_SchemeI_Chevron_v2.mph

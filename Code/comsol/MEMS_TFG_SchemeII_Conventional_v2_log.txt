@@ -1,0 +1,143 @@
+Note: System.getenv blocked by COMSOL security; using defaults.
+Options: PAPER_RESOLUTION=false, MESH_LEVEL=2
+Geometry built: 188 primitives (one domain each).
+Mesh 1 built (level 2): 54202 elements
+>> running std_es : Study 0: Electrostatic unit cells (C(d), dC/dd, fringe factors)
+   done in 41 s, dataset dset1
+   drive cell: C(0)=10.9224 fF/finger, dC/dy=NaN fF/um (analytic 0.23611) -> eta_d=NaN
+   sense cell: C(0)=15.4318 fF/electrode, dC/dx=NaN fF/um (analytic 3.14816) -> eta_s=NaN
+   wrote MEMS_TFG_SchemeII_Conventional_v2_electrostatic_cells.csv
+!! Study 0 failed: Exception:
+	com.comsol.nativeutil.properties.InvalidPropertyValueException: Invalid dataset type.
+Messages:
+	Invalid dataset type
+	- Tag: dset1
+  (eta_d = eta_s = 1 kept)
+>> running std1 : Study 1: Eigenfrequency - drive & sense modes (automatic identification)
+   done in 233 s, dataset dset5
+   mode table (k, f[Hz], Q, P_drive, P_drive_in, P_sense, P_sense_in):
+    1   12985.70   1171.0  2.31e+03    0.0110    0.0233   0.00406  <== DRIVE (anti-phase y)
+    2   13116.43   1201.8    0.0264  0.000768  2.35e+03   0.00340  <== SENSE (anti-phase x)
+    3   16814.08   1495.2    0.0102  2.33e+03  0.000671    0.0119
+    4   18783.39   1641.3  4.31e-06  2.56e-05  4.21e-05  7.26e-06
+    5   18904.18   1658.7  8.43e-06  1.50e-05  3.29e-05  8.70e-06
+    6   23315.64   7499.3  1.96e-06  3.09e-06  2.85e-05  1.96e-05
+    7   23450.23   7099.1  1.80e-06  4.04e-06  3.49e-05  1.82e-05
+    8   28817.43   2620.6     0.103      21.4    0.0707    0.0126
+    9   30330.07   8871.3  5.17e-06  1.93e-06  3.26e-07  2.84e-06
+   10   30750.25   2765.5      39.8     0.117    0.0257     0.203
+   11   32418.13  33227.1  2.84e-06  1.89e-06  7.16e-07  5.14e-06
+   12   33027.16   4682.9  2.08e-06  4.16e-06  1.30e-06  7.19e-06
+   13   34038.95   3280.4   0.00616   0.00760   0.00413  2.29e+03
+   14   35283.57   6847.6  1.70e-06  3.11e-07  1.32e-05  0.000130
+   15   38632.36   4868.3  1.13e-06  2.46e-06  8.36e-06  3.21e-05
+   16   39098.41   5232.4  1.64e-06  5.83e-07  4.76e-07  2.00e-06
+   17   39427.72  16694.7  4.29e-07  3.07e-06  2.43e-06  8.97e-06
+   18   45363.25   7704.2  3.23e-06  7.99e-07  3.48e-07  6.71e-07
+   19   48321.74 2921895.9    0.0516    0.0106  0.000358      18.2
+   20   48444.70 444960.8      28.9   0.00398   0.00182    0.0382
+   21   53557.42   6249.3  2.85e-06  2.47e-06  1.67e-06  2.16e-06
+   22   55632.43  20759.6  1.98e-06  2.06e-06  8.81e-07  1.03e-06
+   23   62007.29  15396.5  1.52e-06  1.82e-06  9.47e-07  7.41e-07
+   24   62580.12  10164.4  3.25e-06  4.42e-06  1.49e-06  2.24e-06
+   25   65489.09  85136.2  5.25e-06  1.80e-06  3.47e-06  1.25e-06
+   26   66575.00  98575.1  1.18e-06  1.21e-06  1.09e-06  3.37e-07
+   27   69323.23  66947.8    0.0161      87.8  0.000788  0.000284
+   28   71886.41  59922.4      66.5    0.0566    0.0117   0.00507
+   29   72055.14  53836.8     0.133      49.7   0.00460    0.0160
+   DRIVE mode #1 f=12985.70 Hz | SENSE mode #2 f=13116.43 Hz | df = 130.73 Hz | R_fem(sense mode) = 0.6084
+   wrote MEMS_TFG_SchemeII_Conventional_v2_modes.csv
+>> running std2 : Study 2: Frequency domain - DRIVE response to the push-pull comb voltages
+   done in 1014 s, dataset dset7
+   wrote MEMS_TFG_SchemeII_Conventional_v2_drive_FRF.csv
+>> running std3 : Study 3: Frequency domain - SENSE response to +/-1 uN (paper Fig. 9)
+   done in 1216 s, dataset dset9
+   FIG.9: peak sense-frame amplitude 0.4868 um at 13116.43 Hz, Q(-3dB) ~ 1171, dC_diff = 55.175 fF, R_fem = 0.6084
+   wrote MEMS_TFG_SchemeII_Conventional_v2_sense_FRF_fig9.csv
+>> running std4 : Study 4: Gyroscope operation - drive voltages + Coriolis (Omega_z sweep) -> C, V_out
+   done in 149 s, dataset dset11
+   wrote MEMS_TFG_SchemeII_Conventional_v2_gyro_operation.csv
+   GYRO @ f_drive: F_drive=2.361 uN, drive amp 1.108 um; at Omega=1.00 rad/s: sense frame 0.7216 nm, dC=81.773 aF, V_out=4.0887 mV  -> 4.0887 mV/(rad/s) = 0.07136 mV/(deg/s)
+>> running std5 : Study 5: Static - sense stiffness and amplification ratio R (paper Sec. 5.1)
+   done in 39 s, dataset dset13
+   STATIC (+/-1 uN): x_l-x_r = 0.00081 um, y_T-y_B = 0.00098 um, R_fem = 0.6078 (theory 0.6400), k_an = 2465.5 N/m
+!! BUILD/SOLVE ERROR: Exception:
+	com.comsol.nativeutil.properties.InvalidPropertyValueException: Invalid property value.
+Messages:
+	Invalid property value
+	- Property: looplevel (Loop level)
+
+	'Loop level' is an array of strings that can be integers.
+
+Exception:
+	com.comsol.nativeutil.properties.InvalidPropertyValueException: Invalid property value.
+Messages:
+	Invalid property value
+	- Property: looplevel (Loop level)
+
+	'Loop level' is an array of strings that can be integers.
+
+Stack trace:
+at com.comsol.nativeutil.properties.Property.C_(SourceFile:1333)
+	at com.comsol.nativeutil.properties.Property.b(SourceFile:1130)
+	at com.comsol.nativeutil.properties.ej.set(SourceFile:38)
+	at com.comsol.model.data.primitive.PropValuePrim.set(SourceFile:2004)
+	at com.comsol.model.dbmodel.PropFeatureDb.c(SourceFile:1669)
+	at com.comsol.model.dbmodel.ResultFeatureDb.c(SourceFile:1120)
+	at com.comsol.model.dbmodel.PropFeatureDb.b(SourceFile:1484)
+	at com.comsol.model.dbmodel.PropFeatureDb.set(SourceFile:677)
+	at com.comsol.model.dbmodel.ResultFeatureDb.set(SourceFile:765)
+	at com.comsol.model.impl.PropFeatureImpl$7.a(SourceFile:753)
+	at com.comsol.model.impl.PropFeatureImpl$7.run(SourceFile:1)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at com.comsol.model.impl.PropFeatureImpl.set(SourceFile:750)
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(Unknown Source)
+	at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
+	at java.lang.reflect.Method.invoke(Unknown Source)
+	at com.comsol.model.debugger.MethodExecModelHelper.runApiMethod(SourceFile:84)
+	at com.comsol.methodexecmph.a.a.a(SourceFile:280)
+	at com.comsol.methodexecmph.a.a.a(SourceFile:219)
+	at com.comsol.methodexecmph.b.a(SourceFile:101)
+	at com.comsol.model.util.ServerModelUtil.runExternalClass(SourceFile:963)
+	at com.comsol.model.util.ModelUtilInternal.runExternalClass(SourceFile:202)
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(Unknown Source)
+	at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
+	at java.lang.reflect.Method.invoke(Unknown Source)
+	at com.comsol.bridge.command.b.a(SourceFile:161)
+	at com.comsol.bridge.command.c.run(SourceFile:63)
+	at com.comsol.bridge.command.k.c(SourceFile:219)
+	at com.comsol.bridge.command.k$1.run(SourceFile:94)
+	at com.comsol.util.thread.SuspendableTasks$1.run(SourceFile:111)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.lang.Thread.run(Unknown Source)
+	at ---.---(Unknown Source)
+	at com.comsol.methodexec.a.f$e.a(SourceFile:351)
+	at com.comsol.methodexec.a.f.d(SourceFile:143)
+	at com.comsol.methodexec.a.f.b(SourceFile:210)
+	at com.comsol.methodexec.a.f.a(SourceFile:187)
+	at com.comsol.methodexec.a.g.a(SourceFile:37)
+	at com.comsol.methodexec.comm.h.a(SourceFile:60)
+	at com.comsol.methodexec.meapi.engine.b.a(SourceFile:159)
+	at com.comsol.methodexec.meapi.engine.b.a(SourceFile:82)
+	at com.comsol.methodexec.meapi.impl.PropFeatureMEClient.set(SourceFile:559)
+	at TFG_SchemeII_Conventional.plot3d(TFG_SchemeII_Conventional.class:863)
+	at TFG_SchemeII_Conventional.solveAll(TFG_SchemeII_Conventional.class:1003)
+	at TFG_SchemeII_Conventional.run(TFG_SchemeII_Conventional.class:58)
+	at TFG_SchemeII_Conventional.main(TFG_SchemeII_Conventional.class:21)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
+	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+	at com.comsol.methodexec.me.d.a(SourceFile:353)
+	at com.comsol.methodexec.util.JDIDebugHook.invokeMethod(SourceFile:30)
+	at com.comsol.methodexec.me.d.a(SourceFile:352)
+	at com.comsol.methodexec.me.d$2.run(SourceFile:283)
+	at java.base/java.security.AccessController.doPrivileged(Native Method)
+	at com.comsol.methodexec.me.d.a(SourceFile:279)
+	at com.comsol.methodexec.me.d.a(SourceFile:140)
+	at com.comsol.methodexec.me.d.a(SourceFile:94)
+	at com.comsol.methodexec.me.b$3.run(SourceFile:244)
+Saved MEMS_TFG_SchemeII_Conventional_v2.mph

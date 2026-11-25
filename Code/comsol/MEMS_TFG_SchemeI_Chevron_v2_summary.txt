@@ -1,0 +1,13 @@
+Scheme I summary
+f_drive_Hz=12929.222
+f_sense_Hz=13080.870
+df_Hz=151.648
+fig9_peak_um=1.21821
+fig9_peak_f_Hz=13080.870
+Q_sense=1817.0
+dC_peak_fF=138.0670
+R_fem_static=1.48295
+k_an_N_per_m=4509.47
+V_out_per_rad_s_mV=6.09925
+dC_per_rad_s_aF=121.98498
+drive_amp_um=1.1135

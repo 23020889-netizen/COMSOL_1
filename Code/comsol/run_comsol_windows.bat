@@ -8,7 +8,7 @@ REM     TFG_MESH=1 (coarse, fast check) / 2 (default) / 3 (fine)
 REM     TFG_PAPER=1  -> sweep resolution of the paper (0.1 Hz near resonance, slow)
 REM ==================================================================
 if "%TFG_MESH%"=="" set TFG_MESH=2
-set COMSOL_BIN=C:\Program Files\COMSOL\COMSOL63\Multiphysics\bin\win64
+set COMSOL_BIN=D:\Download\COMSOL\COMSOL63\Multiphysics\bin\win64
 if not exist "%COMSOL_BIN%\comsolcompile.exe" (
   echo Khong tim thay COMSOL tai %COMSOL_BIN% - hay sua bien COMSOL_BIN trong file nay.
   pause

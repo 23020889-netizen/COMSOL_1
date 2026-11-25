@@ -23,9 +23,13 @@ public class TFG_SchemeI_Chevron {
 
   static void readOptions() {
     // environment variables (comsolbatch does not forward command-line arguments)
-    String p = System.getenv("TFG_PAPER"), mm = System.getenv("TFG_MESH");
-    if (p != null && (p.equals("1") || p.equalsIgnoreCase("true"))) PAPER_RESOLUTION = true;
-    if (mm != null) try { MESH_LEVEL = Integer.parseInt(mm.trim()); } catch (NumberFormatException e) { }
+    try {
+      String p = System.getenv("TFG_PAPER"), mm = System.getenv("TFG_MESH");
+      if (p != null && (p.equals("1") || p.equalsIgnoreCase("true"))) PAPER_RESOLUTION = true;
+      if (mm != null) try { MESH_LEVEL = Integer.parseInt(mm.trim()); } catch (NumberFormatException e) { }
+    } catch (SecurityException e) {
+      log("Note: System.getenv blocked by COMSOL security; using defaults.");
+    }
     log("Options: PAPER_RESOLUTION=" + PAPER_RESOLUTION + ", MESH_LEVEL=" + MESH_LEVEL);
   }
 
@@ -39,7 +43,7 @@ public class TFG_SchemeI_Chevron {
     readOptions();
     ModelUtil.showProgress(true);
     Model model = ModelUtil.create("Model");
-    model.modelPath(new File(".").getAbsolutePath());
+    model.modelPath("C:/Users/minht/OneDrive/M\u00e1y t\u00ednh/Study/CNVCDT/COMSOL_1/Code/comsol");
     model.label("MEMS_TFG_SchemeI_Chevron_v2.mph");
     try {
       parameters(model);
@@ -56,7 +60,7 @@ public class TFG_SchemeI_Chevron {
       log("!! BUILD/SOLVE ERROR: " + e);
       StringWriter sw = new StringWriter(); e.printStackTrace(new PrintWriter(sw)); log(sw.toString());
     } finally {
-      try { model.save(new File(OUT_MPH).getAbsolutePath()); log("Saved " + new File(OUT_MPH).getAbsolutePath()); }
+      try { model.save("C:/Users/minht/OneDrive/M\u00e1y t\u00ednh/Study/CNVCDT/COMSOL_1/Code/comsol/" + OUT_MPH); log("Saved " + OUT_MPH); }
       catch (Exception e) { log("!! could not save: " + e); }
       if (LOG != null) LOG.close();
     }
@@ -885,7 +889,7 @@ public class TFG_SchemeI_Chevron {
       String t = "img_" + plot;
       m.result().export().create(t, "Image");
       m.result().export(t).set("sourceobject", plot);
-      m.result().export(t).set("pngfilename", new File(file).getAbsolutePath());
+      m.result().export(t).set("pngfilename", "C:/Users/minht/OneDrive/M\u00e1y t\u00ednh/Study/CNVCDT/COMSOL_1/Code/comsol/" + file);
       m.result().export(t).run();
     } catch (Exception e) { log("   (image export skipped: " + e + ")"); }
   }
@@ -982,7 +986,7 @@ public class TFG_SchemeI_Chevron {
     model.study("std4").feature("freq").set("plist", String.format(Locale.US, "%.3f", fd));
     model.study("std4").feature("freq").set("punit", "Hz");
     String dsG = runStudy(model, "std4");
-    double[][] g = evalGlobal(model, "gev_gyro", dsG, new String[]{"Omega_z", "abs(comp1.y_drive)", "abs(comp1.a_out)", "abs(comp1.d_out)", "abs(comp1.dC_diff)", "abs(comp1.V_out)", "comp1.F_drive"},
+    double[][] g = evalGlobal(model, "gev_gyro", dsG, new String[]{"Omega_z", "abs(comp1.y_drive)", "abs(comp1.a_out)", "abs(comp1.d_out)", "abs(comp1.dC_diff)", "abs(comp1.V_out)", "F_drive"},
         new String[]{"rad/s", "um", "nm", "nm", "aF", "mV", "uN"}, "tbl_gyro");
     model.result().table("tbl_gyro").label("Gyro operation at f_drive: Omega, drive amp., sense amp., dC, V_out");
     writeCsv(pre + "_gyro_operation.csv", "Omega_rad_s,drive_amp_um,sense_frame_amp_nm,differential_disp_nm,dC_diff_aF,V_out_mV,F_drive_uN", g);
