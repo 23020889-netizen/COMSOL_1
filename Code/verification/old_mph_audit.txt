@@ -1,0 +1,59 @@
+====================================================================================================
+../MEMS_Tuning_Fork_Gyroscope_Figure9_Conical_Solved.mph
+  param h_device           = 40[um]          # Device layer thickness
+  param rho_si             = 2320[kg/m^3]    # Silicon density
+  param E_si               = 170[GPa]        # Silicon Young's modulus
+  param nu_si              = 0.22            # Silicon Poisson's ratio
+  param F_coriolis         = 1[uN]           # Harmonic Coriolis excitation force
+  param V_drive_DC         = 20[V]           # Push-pull drive DC bias
+  param V_drive_AC         = 5[V]            # Push-pull drive AC amplitude
+  param V_drive_pos_peak   = 25[V]           # Positive drive electrode peak voltage
+  param V_drive_neg_peak   = -25[V]          # Negative drive electrode peak voltage
+  param V_bias_top         = 5[V]            # Top Chevron sense electrode DC bias
+  param V_bias_bot         = -5[V]           # Bottom Chevron sense electrode DC bias
+  param V_rotor_ground     = 0[V]            # Proof masses, chevron arms and rockers ground
+  param density            = rho_si          # Density
+  param E                  = E_si            # Young's modulus
+  param nu                 = nu_si           # Poisson's ratio
+  param density            = rho_si          # Density
+  param E                  = E_si            # Young's modulus
+  param nu                 = nu_si           # Poisson's ratio
+  Electrostatics / electromechanics physics present: False
+  Damping loss factor eta_s = 1|1,'1/1069.11'  (Q forced = 1/eta)
+  Roller constraint present (w = 0 on the whole bottom face)
+  BodyLoad bfl_l: 3|1,'1[uN]/(1200*1200*40[um^3])'|1,'0'|1,'0'
+  BodyLoad bfl_r: 3|1,'-1[uN]/(1200*1200*40[um^3])'|1,'0'|1,'0'
+  3D plot pg_drive               eigen-solution index ["1|1,'10'"]  '1. Hinh thai 3D: Che do Dan dong (Drive Mode - Anti-phase Y Seesaw)'
+  3D plot pg_sense               eigen-solution index ["1|1,'11'"]  '2. Hinh thai 3D: Che do Cam ung & Khuech dai Chevron (Sense Mode - Ant'
+  plotted expression glob1: 1|1,'1.53825 * 2e-6 / sqrt((4598.5 - 6.84691e-7*(2*pi*freq)^2)^2 + (3.07354e-5*2*pi*freq)^2) * 1e6'
+  plotted expression glob2: 1|1,'2e-6 / sqrt((2024.7 - 2.98826e-7*(2*pi*freq)^2)^2 + (5.02739e-5*2*pi*freq)^2) * 1e6'
+  3D plot pg_electrodes          eigen-solution index ["1|1,'1'"]  '4. Phan bo Dien ap & Vi tri Dien cuc tren Mo hinh 3D (Applied Voltages'
+  plotted expression surf_v: ((x >= -1650e-6)*(x <= -550e-6)*(y >= 720e-6)*(y <= 780e-6))*25 + ((x >= -1650e-6)*(x <= -550e-6)*(y >= -780e-6)*(y <= -720e-6))*25 + ((x >= 550e-6)*(x <= 1650e
+  plotted expression glob_c1: 1|1,'0.70832 * (1.53825 * 2e-6 / sqrt((4598.5 - 6.6214e-7*(2*pi*freq)^2)^2 + (3.059e-5*2*pi*freq)^2) * 1e6)'
+  plotted expression glob_c2: 1|1,'0.70832 * (2e-6 / sqrt((2024.7 - 2.91e-7*(2*pi*freq)^2)^2 + (2.49e-5*2*pi*freq)^2) * 1e6)'
+  stored eigenfrequencies (Hz, Q): 2286 (1069), 8027 (1069), 13499 (1069), 15614 (1069), 23066 (1069), 27287 (1069), 78399 (1069), 107656 (1069), 111449 (1069), 112103 (1069), 115541 (1069), 116206 (1069)
+====================================================================================================
+../MEMS_Tuning_Fork_Gyroscope_SchemeII_Conventional_Solved.mph
+  param h_device           = 40[um]          # Device layer thickness (Table 1)
+  param rho_si             = 2330[kg/m^3]    # Polysilicon density (Table 2)
+  param E_si               = 170[GPa]        # Polysilicon Young's modulus (Table 2)
+  param nu_si              = 0.28            # Polysilicon Poisson's ratio (Table 2)
+  param F_coriolis         = 1[uN]           # Harmonic Coriolis excitation force
+  param Q_scheme2          = 700.57          # Quality factor of Scheme II (Table 6)
+  param f_drive_target     = 13105.9[Hz]     # Theoretical Drive natural frequency (Table 4)
+  param f_sense_target     = 13100.6[Hz]     # FEA Sense resonance frequency (Table 4 & 6)
+  param density            = rho_si          # Density
+  param E                  = E_si            # Young's modulus
+  param nu                 = nu_si           # Poisson's ratio
+  param density            = rho_si          # Density
+  param E                  = E_si            # Young's modulus
+  param nu                 = nu_si           # Poisson's ratio
+  Electrostatics / electromechanics physics present: False
+  Damping loss factor eta_s = 1|1,'1/Q_scheme2'  (Q forced = 1/eta)
+  Roller constraint present (w = 0 on the whole bottom face)
+  BodyLoad bfl_l: 3|1,'F_coriolis/(1200*1200*40[um^3])'|1,'0'|1,'0'
+  BodyLoad bfl_r: 3|1,'-F_coriolis/(1200*1200*40[um^3])'|1,'0'|1,'0'
+  3D plot pg_drive               eigen-solution index ["1|1,'10'"]  '1. Hinh thai 3D: Che do Dan dong (Drive Mode - Anti-phase Y Seesaw)'
+  3D plot pg_sense               eigen-solution index ["1|1,'11'"]  '2. Hinh thai 3D: Che do Cam ung Truyen thong (Sense Mode - Anti-phase '
+  plotted expression glob2: 1|1,'2e-6 / sqrt((2024.7 - 2.98826e-7*(2*pi*freq)^2)^2 + (5.02739e-5*2*pi*freq)^2) * 1e6'
+  stored eigenfrequencies (Hz, Q): 112000 (701), 112152 (701), 115565 (701), 115733 (701), 161136 (701), 163306 (701), 203901 (701), 208872 (701), 273631 (701), 274365 (701), 275725 (701), 276048 (701)
