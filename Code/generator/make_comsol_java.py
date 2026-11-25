@@ -7,7 +7,7 @@ Both files are generated from the SAME geometry module and the SAME physics
 parameter set, so the only difference between the two .mph files is the sense
 coupling (chevron amplifier + amplified frames  vs  diamond + direct sense frames).
 """
-import os, math, textwrap
+import os, sys, math, textwrap
 import tfg_geometry as G
 import tfg_physics as PH
 
@@ -16,6 +16,12 @@ OUTDIR = os.path.join(HERE, '..', 'comsol')
 
 CLASS = {'I': 'TFG_SchemeI_Chevron', 'II': 'TFG_SchemeII_Conventional'}
 MPH = {'I': 'MEMS_TFG_SchemeI_Chevron_v2.mph', 'II': 'MEMS_TFG_SchemeII_Conventional_v2.mph'}
+# Folder where COMSOL writes the .mph, logs, CSV, PNG and GIF files.  comsolbatch does not run in the
+# java folder and its security policy blocks System.getenv, so the folder is baked in at generation:
+#     python make_comsol_java.py --outdir "D:/my/folder/Code/comsol"
+# If the folder does not exist at run time, the COMSOL working directory is used instead.
+DEFAULT_OUTDIR = "C:/Users/minht/OneDrive/M\u00e1y t\u00ednh/Study/CNVCDT/COMSOL_1/Code/comsol"
+OUTDIR_RUN = DEFAULT_OUTDIR
 
 
 def jd(x):
@@ -124,6 +130,9 @@ def emit(scheme):
     w("  /** mesh: 1 = coarse (fast check), 2 = normal (default), 3 = fine. */")
     w("  static int MESH_LEVEL = 2;")
     w("  static PrintWriter LOG;")
+    jdir = ''.join(c if ord(c) < 128 else '\\u%04x' % ord(c) for c in OUTDIR_RUN)   # ASCII-only java source
+    w(f"  static String OUT_DIR = \"{jdir}\";")
+    w("  static String f(String name) { return OUT_DIR + \"/\" + name; }")
     w("")
     w("  public static void main(String[] args) {")
     w("    run();")
@@ -148,11 +157,12 @@ def emit(scheme):
     w("")
     # ---- run()
     w("  public static Model run() {")
-    w("    try { LOG = new PrintWriter(new FileWriter(OUT_MPH.replace(\".mph\", \"_log.txt\"))); } catch (IOException e) { LOG = null; }")
+    w("    if (!new File(OUT_DIR).isDirectory()) OUT_DIR = new File(\".\").getAbsolutePath();")
+    w("    try { LOG = new PrintWriter(new FileWriter(f(OUT_MPH.replace(\".mph\", \"_log.txt\")))); } catch (IOException e) { LOG = null; }")
     w("    readOptions();")
     w("    ModelUtil.showProgress(true);")
     w("    Model model = ModelUtil.create(\"Model\");")
-    w("    model.modelPath(new File(\".\").getAbsolutePath());")
+    w("    model.modelPath(OUT_DIR);")
     w(f"    model.label(\"{MPH[scheme]}\");")
     w("    try {")
     w("      parameters(model);")
@@ -169,7 +179,7 @@ def emit(scheme):
     w("      log(\"!! BUILD/SOLVE ERROR: \" + e);")
     w("      StringWriter sw = new StringWriter(); e.printStackTrace(new PrintWriter(sw)); log(sw.toString());")
     w("    } finally {")
-    w("      try { model.save(new File(OUT_MPH).getAbsolutePath()); log(\"Saved \" + new File(OUT_MPH).getAbsolutePath()); }")
+    w("      try { model.save(f(OUT_MPH)); log(\"Saved \" + f(OUT_MPH)); }")
     w("      catch (Exception e) { log(\"!! could not save: \" + e); }")
     w("      if (LOG != null) LOG.close();")
     w("    }")
@@ -294,6 +304,9 @@ def emit(scheme):
     w("    model.component(\"comp1\").cpl().create(\"int_all\", \"Integration\");")
     w("    model.component(\"comp1\").cpl(\"int_all\").set(\"opname\", \"int_all\");")
     w("    model.component(\"comp1\").cpl(\"int_all\").selection().all();")
+    w("    model.component(\"comp1\").cpl().create(\"max_all\", \"Maximum\");")
+    w("    model.component(\"comp1\").cpl(\"max_all\").set(\"opname\", \"max_all\");")
+    w("    model.component(\"comp1\").cpl(\"max_all\").selection().all();")
     var = [
         ('uL', 'ave_pmL(u)', 'x-displacement, left Coriolis mass'),
         ('vL', 'ave_pmL(v)', 'y-displacement, left Coriolis mass'),
@@ -308,6 +321,8 @@ def emit(scheme):
         ('V_pmL', 'int_pmL(1)', 'Volume, left Coriolis mass'),
         ('V_pmR', 'int_pmR(1)', 'Volume, right Coriolis mass'),
         ('m_modal', 'sqrt(int_all(rho_si*(abs(u)^2+abs(v)^2+abs(w)^2)))', 'sqrt of modal mass (mode normalisation)'),
+        ('z_frac', 'sqrt(int_all(abs(w)^2)/int_all(abs(u)^2+abs(v)^2+abs(w)^2))', 'Out-of-plane (z) fraction of the mode shape (0 = purely in-plane)'),
+        ('d_max', 'max_all(solid.disp)', 'Largest displacement magnitude of the mode (for a fixed deformation scale)'),
         ('P_drive', 'abs(vL-vR)/m_modal', 'Participation: anti-phase DRIVE (y) of the Coriolis masses'),
         ('P_drive_in', 'abs(vL+vR)/m_modal', 'Participation: in-phase y motion'),
         ('P_sense', 'abs(uL-uR)/m_modal', 'Participation: anti-phase SENSE (x) of the Coriolis masses'),
@@ -562,8 +577,14 @@ JAVA_SOLVE = r'''
     long t0 = System.currentTimeMillis();
     log(">> running " + std + " : " + m.study(std).label());
     m.study(std).run();
-    String ds = null;
-    for (String t : dsets(m)) if (!before.contains(t)) { ds = t; break; }
+    // a parametric sweep creates several datasets (one per solution + the sweep itself):
+    // keep the Solution dataset that holds the largest number of solutions
+    String ds = null; int best = -1;
+    for (String t : dsets(m)) {
+      if (before.contains(t)) continue;
+      int n = nSolutions(m, t);
+      if (n > best) { best = n; ds = t; }
+    }
     if (ds == null) {   // no dataset generated automatically -> create one on the first new solution
       String sol = null;
       for (String t : m.sol().tags()) if (!solBefore.contains(t)) { sol = t; break; }
@@ -573,6 +594,21 @@ JAVA_SOLVE = r'''
     }
     log("   done in " + (System.currentTimeMillis() - t0) / 1000 + " s, dataset " + ds);
     return ds;
+  }
+
+  static int nSolutions(Model m, String ds) {
+    String tag = "probe_" + ds;
+    try {
+      m.result().numerical().create(tag, "EvalGlobal");
+      m.result().numerical(tag).set("data", ds);
+      m.result().numerical(tag).set("expr", new String[]{"1", "1", "1"});
+      double[][] r = m.result().numerical(tag).getReal();
+      m.result().numerical().remove(tag);
+      return (r.length == 3) ? r[0].length : r.length;   // [expr][sol] or [sol][expr]
+    } catch (Exception e) {
+      try { m.result().numerical().remove(tag); } catch (Exception e2) { }
+      return -1;   // not a solution dataset (e.g. parametric extrusion)
+    }
   }
 
   static double[][] transpose(double[][] a) {
@@ -653,6 +689,10 @@ JAVA_SOLVE = r'''
     m.result(tag).create("surf1", "Surface");
     m.result(tag).feature("surf1").set("expr", expr);
     m.result(tag).feature("surf1").create("def1", "Deform");
+    if (DEF_SCALE > 0) {
+      m.result(tag).feature("surf1").feature("def1").set("scaleactive", true);
+      m.result(tag).feature("surf1").feature("def1").set("scale", DEF_SCALE);
+    }
     try { m.result(tag).set("titletype", "manual"); m.result(tag).set("title", title); } catch (Exception e) { }
   }
 
@@ -669,18 +709,56 @@ JAVA_SOLVE = r'''
     } catch (Exception e) { }
   }
 
+  static double DEF_SCALE = -1;
+
+  /** Animation of ONE eigenmode over a full harmonic cycle (phase 0..360 deg).
+   *  The default Animation sequence type "Stored solutions" would instead step through ALL
+   *  eigenmodes (including the out-of-plane z modes) -> that was the wrong-looking GIF. */
+  static void animate(Model m, String plot, String base) {
+    String t = "anim_" + plot;
+    boolean dde = false;
+    try {
+      m.result().export().create(t, "Animation");
+      m.result().export(t).set("plotgroup", plot);
+      m.result().export(t).set("target", "file");
+      m.result().export(t).set("sweeptype", "dde");          // dynamic data extension = phase sweep
+      dde = true;
+      try { m.result().export(t).set("cycletype", "full"); } catch (Exception e) { }
+      try { m.result().export(t).set("type", "movie"); } catch (Exception e) { }
+      try { m.result().export(t).set("movietype", "gif"); } catch (Exception e) { }
+      m.result().export(t).set("giffilename", base + ".gif");
+      try { m.result().export(t).set("maxframes", 24); } catch (Exception e) { }
+      try { m.result().export(t).set("synchronize", true); } catch (Exception e) { }
+      m.result().export(t).run();
+      log("   animation " + base + ".gif (phase sweep of one mode)");
+    } catch (Exception e) {
+      log("   (GIF export " + (dde ? "failed" : "skipped: phase sweep not available") + ": " + e + ") -> PNG phase frames instead");
+      try { m.result().export().remove(t); } catch (Exception e2) { }
+    }
+    // always also write 12 PNG frames u(t) = Re(U e^{i phi}); make_mode_gifs.py assembles them
+    try {
+      for (int k = 0; k < 12; k++) {
+        m.result(plot).set("phasetype", "manual");
+        m.result(plot).set("phase", String.valueOf(30 * k));
+        image(m, plot, base + String.format(Locale.US, "_phase%03d.png", 30 * k));
+      }
+      m.result(plot).set("phase", "0");
+    } catch (Exception e) { log("   (phase frames skipped: " + e + ")"); }
+  }
+
   static void image(Model m, String plot, String file) {
     try {
-      String t = "img_" + plot;
+      String t = "img_" + Integer.toHexString(file.hashCode());
+      try { m.result().export().remove(t); } catch (Exception e0) { }
       m.result().export().create(t, "Image");
       m.result().export(t).set("sourceobject", plot);
-      m.result().export(t).set("pngfilename", new File(file).getAbsolutePath());
+      m.result().export(t).set("pngfilename", file);
       m.result().export(t).run();
     } catch (Exception e) { log("   (image export skipped: " + e + ")"); }
   }
 
   static void solveAll(Model model) {
-    String pre = OUT_MPH.replace(".mph", "");
+    String pre = f(OUT_MPH.replace(".mph", ""));
     // ---------------- 0) electrostatic cells -> fringe factors ----------------
     try {
       String ds = runStudy(model, "std_es");
@@ -697,6 +775,7 @@ JAVA_SOLVE = r'''
       model.result().create("pg_es", "PlotGroup2D");
       model.result("pg_es").label("0. Electrostatic cells: potential V (drive comb left, sense plates right)");
       model.result("pg_es").set("data", ds);
+      try { model.result("pg_es").set("looplevel", new int[]{3}); } catch (Exception e3) { }   // d_cell = 0
       model.result("pg_es").create("surf1", "Surface");
       model.result("pg_es").feature("surf1").set("expr", "V");
       model.result("pg_es").create("con1", "Contour");
@@ -706,34 +785,41 @@ JAVA_SOLVE = r'''
 
     // ---------------- 1) eigenfrequencies + automatic drive/sense identification ----------------
     String dsEig = runStudy(model, "std1");
-    String[] ex = new String[]{"real(freq)", "comp1.Q_mode", "comp1.P_drive", "comp1.P_drive_in", "comp1.P_sense", "comp1.P_sense_in", "comp1.R_fem"};
-    double[][] e = evalGlobal(model, "gev_modes", dsEig, ex, new String[]{"Hz", "1", "1", "1", "1", "1", "1"}, "tbl_modes");
+    String[] ex = new String[]{"real(freq)", "comp1.Q_mode", "comp1.P_drive", "comp1.P_drive_in", "comp1.P_sense", "comp1.P_sense_in", "comp1.R_fem", "comp1.z_frac", "comp1.d_max"};
+    double[][] e = evalGlobal(model, "gev_modes", dsEig, ex, new String[]{"Hz", "1", "1", "1", "1", "1", "1", "1", "um"}, "tbl_modes");
     model.result().table("tbl_modes").label("Eigenmodes: frequency, Q, participation (drive / sense, anti- / in-phase)");
     int n = e[0].length, kd = 0, ks = 0;
     // a mode's contribution to the anti-phase static compliance is ~ (P/f)^2 -> rank by P/f
     // drive candidates: P_drive > P_sense ; sense candidates: P_sense > P_drive  (never the same mode)
     double bd = -1, bs = -1;
+    for (int pass = 0; pass < 2 && (bd < 0 || bs < 0); pass++)
     for (int i = 0; i < n; i++) {
+      if (pass == 0 && e[7][i] > 0.3) continue;   // out-of-plane (z) mode: cannot be the in-plane drive / sense mode
       if (e[2][i] > e[4][i] && e[2][i] / e[0][i] > bd) { bd = e[2][i] / e[0][i]; kd = i; }
       if (e[4][i] > e[2][i] && e[4][i] / e[0][i] > bs) { bs = e[4][i] / e[0][i]; ks = i; }
     }
     double fd = e[0][kd], fs = e[0][ks];
-    log("   mode table (k, f[Hz], Q, P_drive, P_drive_in, P_sense, P_sense_in):");
+    log("   mode table (k, f[Hz], Q, P_drive, P_drive_in, P_sense, P_sense_in, z_frac):");
     for (int i = 0; i < n; i++)
-      log(String.format(Locale.US, "   %2d %10.2f %8.1f %9.3g %9.3g %9.3g %9.3g%s", i + 1, e[0][i], e[1][i], e[2][i], e[3][i], e[4][i], e[5][i],
+      log(String.format(Locale.US, "   %2d %10.2f %8.1f %9.3g %9.3g %9.3g %9.3g %7.4f%s", i + 1, e[0][i], e[1][i], e[2][i], e[3][i], e[4][i], e[5][i], e[7][i],
           (i == kd ? "  <== DRIVE (anti-phase y)" : (i == ks ? "  <== SENSE (anti-phase x)" : ""))));
     if (kd == ks) log("!! drive and sense identified as the same mode - check the model!");
-    log(String.format(Locale.US, "   DRIVE mode #%d f=%.2f Hz | SENSE mode #%d f=%.2f Hz | df = %.2f Hz | R_fem(sense mode) = %.4f",
-        kd + 1, fd, ks + 1, fs, fs - fd, e[6][ks]));
-    writeCsv(pre + "_modes.csv", "f_Hz,Q,P_drive,P_drive_in,P_sense,P_sense_in,R_fem", e);
+    log(String.format(Locale.US, "   DRIVE mode #%d f=%.2f Hz (z_frac %.4f) | SENSE mode #%d f=%.2f Hz (z_frac %.4f) | df = %.2f Hz | R_fem(sense mode) = %.4f",
+        kd + 1, fd, e[7][kd], ks + 1, fs, e[7][ks], fs - fd, e[6][ks]));
+    writeCsv(pre + "_modes.csv", "f_Hz,Q,P_drive,P_drive_in,P_sense,P_sense_in,R_fem,z_frac,d_max_um", e);
     model.param().set("f_drive", String.format(Locale.US, "%.3f[Hz]", fd), "Drive-mode frequency (Study 1, mode " + (kd + 1) + ")");
     model.param().set("f_sense", String.format(Locale.US, "%.3f[Hz]", fs), "Sense-mode frequency (Study 1, mode " + (ks + 1) + ")");
+    DEF_SCALE = 150.0 / Math.max(1e-30, e[8][kd]);   // 150 um visual amplitude, SAME scale in every frame
     plot3d(model, "pg_drive", "1. DRIVE mode (anti-phase y, mode " + (kd + 1) + ")", dsEig, kd + 1, "v",
         String.format(Locale.US, "Drive mode #%d: f = %.1f Hz (colour: y-displacement v)", kd + 1, fd));
+    DEF_SCALE = 150.0 / Math.max(1e-30, e[8][ks]);
     plot3d(model, "pg_sense", "2. SENSE mode (anti-phase x, mode " + (ks + 1) + ")", dsEig, ks + 1, "@SCHEME@".equals("I") ? "v" : "u",
         String.format(Locale.US, "Sense mode #%d: f = %.1f Hz (colour: %s)", ks + 1, fs, "@SCHEME@".equals("I") ? "y-displacement v - amplified frames" : "x-displacement u"));
     image(model, "pg_drive", pre + "_drive_mode.png");
     image(model, "pg_sense", pre + "_sense_mode.png");
+    animate(model, "pg_drive", pre + "_drive_mode");
+    animate(model, "pg_sense", pre + "_sense_mode");
+    DEF_SCALE = -1;
 
     // ---------------- 2) drive frequency response ----------------
     model.study("std2").feature("freq").set("plist", plist(fd, fd, fs, false));
@@ -771,7 +857,7 @@ JAVA_SOLVE = r'''
     model.study("std4").feature("freq").set("plist", String.format(Locale.US, "%.3f", fd));
     model.study("std4").feature("freq").set("punit", "Hz");
     String dsG = runStudy(model, "std4");
-    double[][] g = evalGlobal(model, "gev_gyro", dsG, new String[]{"Omega_z", "abs(comp1.y_drive)", "abs(comp1.a_out)", "abs(comp1.d_out)", "abs(comp1.dC_diff)", "abs(comp1.V_out)", "comp1.F_drive"},
+    double[][] g = evalGlobal(model, "gev_gyro", dsG, new String[]{"Omega_z", "abs(comp1.y_drive)", "abs(comp1.a_out)", "abs(comp1.d_out)", "abs(comp1.dC_diff)", "abs(comp1.V_out)", "F_drive"},
         new String[]{"rad/s", "um", "nm", "nm", "aF", "mV", "uN"}, "tbl_gyro");
     model.result().table("tbl_gyro").label("Gyro operation at f_drive: Omega, drive amp., sense amp., dC, V_out");
     writeCsv(pre + "_gyro_operation.csv", "Omega_rad_s,drive_amp_um,sense_frame_amp_nm,differential_disp_nm,dC_diff_aF,V_out_mV,F_drive_uN", g);
@@ -805,6 +891,8 @@ JAVA_SOLVE = r'''
 '''
 
 if __name__ == '__main__':
+    if '--outdir' in sys.argv:
+        OUTDIR_RUN = sys.argv[sys.argv.index('--outdir') + 1].replace('\\', '/').rstrip('/')
     for sc in ('I', 'II'):
         path, P, parts = emit(sc)
         print('wrote', os.path.relpath(path), len(parts), 'parts')

@@ -214,3 +214,49 @@ Hội tụ lưới (FEM kiểm chứng, lưới mịn gấp ~1.8 lần): sai kh�
 * Hình học là bản dựng lại theo Bảng 1 và Hình 1 (bài báo không công bố bản vẽ chi tiết); răng lược điện cực được
   mô hình hóa tập trung (như bài báo) + ô tĩnh điện 2D.
 * COMSOL 3D có thể lệch FEM ứng suất phẳng ~1–2 %; vì mode và dải quét được xác định tự động, các kết quả vẫn nhất quán.
+
+---
+
+## 8. Kết quả chạy COMSOL 6.3 thực tế và sửa lỗi hình ảnh chuyển động (cập nhật)
+
+### 8.1. Kết quả COMSOL khớp dự đoán
+| | Scheme I (COMSOL) | dự đoán FEM 2D | Scheme II (COMSOL) | dự đoán FEM 2D |
+|---|---|---|---|---|
+| f_drive (Hz) | 12929.2 | 12917.0 | 12985.7 | 12980.1 |
+| f_sense (Hz) | 13080.9 | 13042.4 | 13116.4 | 13106.2 |
+| Biên độ Hình 9 (µm) | 1.2182 | 1.2219 | 0.4868 | 0.4872 |
+| Tỉ số I/II | **2.50×** | 2.51× | | |
+| R (tĩnh) | 1.483 | 1.483 | 0.608 | 0.608 |
+
+Trong bảng mode, drive = mode 1 và sense = mode 2 có P_drive / P_sense ≈ 2.3·10³. Các mode 4–7, 9–16… có
+P ≈ 10⁻⁶–10⁻⁵ là mode **uốn ngoài mặt phẳng (z)** ở 18–45 kHz. Chúng không phải mode làm việc.
+
+### 8.2. Vì sao ảnh động "cảm biến bị biến dạng theo z"
+Ảnh động `*_sense_mode.gif` cũ được xuất bằng nút Animation với chuỗi khung mặc định **"Stored solutions"**
+(giá trị `sweeptype = "dynamic"` không hợp lệ nên COMSOL giữ mặc định). Vì vậy GIF **duyệt qua lần lượt 24 mode riêng**
+chứ không cho một mode dao động:
+* khung 0 = mode 1 (drive), dù tiêu đề ghi "Sense mode #2";
+* khung 1 = mode 2 (sense, đúng);
+* khung 3 = mode 4 (18.2 kHz, khối Coriolis và khung uốn theo z), v.v.
+
+Bản thân mode drive/sense **nằm trong mặt phẳng**. Biến dạng z chỉ đến từ các mode khác bị ghép vào GIF.
+
+### 8.3. Đã sửa
+* Animation dùng **Dynamic data extension** (`sweeptype = "dde"`, chu kỳ đầy đủ). Ảnh động là u(t) = Re(U·e^{iφ}),
+  φ = 0…360°, của **đúng một mode** (mode đặt trong plot group).
+* **Hệ số biến dạng cố định** (150 µm / max|u| của mode) cho mọi khung, nên biên độ không bị co giãn giữa các khung.
+* Phương án dự phòng: xuất 12 khung PNG theo pha (`*_phase000.png … *_phase330.png`), ghép bằng
+  `python Code/generator/make_mode_gifs.py Code/comsol`.
+* Thêm chỉ số **z_frac** = ‖w‖/‖u‖ cho mỗi mode vào bảng mode / log / CSV. Mode có z_frac > 0.3 không được chọn làm drive/sense.
+* Lỗi khác trong log: Study 0 chọn nhầm dataset của quét tham số (dC/dy = NaN, η giữ = 1). Nay chọn dataset chứa
+  nhiều nghiệm nhất. `comp1.F_drive` đổi thành `F_drive` (tham số toàn cục). Thư mục xuất được ghi vào Java
+  (`--outdir`) vì comsolbatch chặn `System.getenv` và không chạy trong thư mục chứa file java.
+
+### 8.4. Xuất lại ảnh động mà không phải giải lại
+```
+comsolcompile ExportMissingVisuals.java
+comsolbatch -inputfile ExportMissingVisuals.class -nosave
+python ..\generator\make_mode_gifs.py .
+```
+`ExportMissingVisuals.java` mở 2 file .mph đã giải, đặt hệ số biến dạng cố định, xuất GIF quét pha và 12 khung PNG.
+Các ảnh động trong `Bao_Cao_Chuong_5_*.docx` cần thay bằng ảnh mới.

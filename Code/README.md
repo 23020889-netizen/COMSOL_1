@@ -15,6 +15,8 @@ Báo cáo chi tiết: [`../Docs/Bao_Cao_Sua_Mo_Hinh_COMSOL_TFG_v2.md`](../Docs/B
 | `generator/fe_check.py`, `fe_compare.py` | FEM độc lập (gmsh + scikit-fem) → `verification/` |
 | `generator/analyze_old_mph.py` | Kiểm toán file .mph cũ (không cần COMSOL) |
 | `generator/compare_comsol_runs.py` | Bảng/đồ thị so sánh sau khi chạy COMSOL |
+| `generator/make_mode_gifs.py` | Ghép khung PNG theo pha thành GIF |
+| `comsol/ExportMissingVisuals.java` | Xuất lại GIF/PNG từ .mph đã giải (sửa lỗi GIF duyệt qua mọi mode) |
 | `verification/` | Kết quả kiểm chứng: mode, Hình 9, điện dung, sơ đồ điện áp, `results.json`, kiểm toán file cũ |
 
 ## Sinh file .mph mới (máy có COMSOL 6.3)
@@ -31,7 +33,13 @@ comsol compile TFG_SchemeI_Chevron.java
 ```bash
 comsol batch -inputfile TFG_SchemeI_Chevron.class -nosave
 ```
-Tùy chọn (biến môi trường): `TFG_MESH=1|2|3` (thô/thường/mịn), `TFG_PAPER=1` (bước quét 0.1 Hz như bài báo, chậm).
+Thư mục xuất được ghi cứng vào Java (comsolbatch chặn biến môi trường): sinh lại bằng
+`python3 make_comsol_java.py --outdir "D:/duong/dan/Code/comsol"` nếu chạy trên máy khác.
+Đổi `MESH_LEVEL` / `PAPER_RESOLUTION` ở đầu file Java nếu cần (lưới thô/thường/mịn; bước quét 0.1 Hz như bài báo).
+
+Ảnh động mode: mỗi GIF là **một** mode dao động theo pha (Dynamic data extension) + 12 khung PNG
+`*_phaseXXX.png`; ghép bằng `python generator/make_mode_gifs.py comsol`. Xuất lại từ .mph đã giải (không giải lại):
+`comsolcompile ExportMissingVisuals.java` rồi `comsolbatch -inputfile ExportMissingVisuals.class -nosave`.
 
 Đầu ra mỗi scheme: `MEMS_TFG_Scheme*_v2.mph`, `*_log.txt` (bảng mode, tần số, R, V_out…), `*_modes.csv`,
 `*_drive_FRF.csv`, `*_sense_FRF_fig9.csv`, `*_gyro_operation.csv`, `*_electrostatic_cells.csv`, `*_summary.txt`, ảnh PNG.
